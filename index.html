@@ -4396,12 +4396,8 @@
     [data-bgm]{ right:max(12px, env(safe-area-inset-right)) !important; bottom:max(12px, env(safe-area-inset-bottom)) !important; }
   }
   @media (orientation:portrait) and (max-width:760px){
-    /* 竖屏取景：Spline 预览的 FOV 跟画布像素宽走。把 iframe 渲染成 --k 倍再缩回来 =
-       拿更宽的取景塞进竖屏 → 整组群像都进框（锥帽/银盆/边角角色不再被裁）。
-       --k 可调：调大=取景更宽、群像更小；调小=更近。弱机卡顿就把 --k 往 1.8 收。 */
-    [data-scene]{ --k:2; width:calc(100vw * var(--k)) !important; height:calc(100dvh * var(--k)) !important;
-      left:0 !important; right:auto !important; top:0 !important; bottom:auto !important;
-      transform:scale(calc(1 / var(--k))) !important; transform-origin:top left !important; }
+    /* Keep a wider mobile frame without the previous 2x over-render, which made typing lag on phones. */
+    [data-scene]{ width:170vw !important; height:100dvh !important; left:50% !important; right:auto !important; top:0 !important; bottom:auto !important; transform:translateX(-50%) !important; transform-origin:center center !important; }
   }
   @media (orientation:landscape) and (max-height:560px){
     [data-scene]{ width:150vw !important; height:100dvh !important; left:50% !important; right:auto !important; top:0 !important; bottom:auto !important; transform:translateX(-50%) !important; transform-origin:center center !important; }
