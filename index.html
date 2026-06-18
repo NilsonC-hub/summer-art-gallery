@@ -3,6 +3,9 @@
 <title>夏日美术馆</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="icon" href="data:,">
 <script src="assets/bundle/d720e783-596a-48f5-bdcf-39baa6692c63.js"></script>
 </head>
@@ -4605,6 +4608,7 @@ class Component extends DCLogic {
           doorEl=q('[data-door]'), scene=q('[data-scene]'), warm=q('[data-warm]');
     // ▼▼▼ 接入点 3 / Spline 教室场景（需联网） ▼▼▼
     const SCENE_URL="https://app.spline.design/file/8fe61b2e-fb6c-4c4a-b028-5cf154ea519f?view=preview";
+    const freshSceneUrl=()=>`${SCENE_URL}&cb=${Date.now()}`;
 
     let chatterStart=0;
     const chBlip=()=>{ const k=chatterStart?Math.min(1,(performance.now()-chatterStart)/2500):1; const f=380+Math.random()*520;
@@ -4649,7 +4653,7 @@ class Component extends DCLogic {
       setTimeout(()=>{ startChatter(); setTimeout(notice,isCompactView()?4300:7000); },isCompactView()?1200:3200); };
     const openDoor=()=>{ if(doorEl.classList.contains('open')) return; ensureAc(); doorSound();
       doorEl.classList.add('open'); warm.classList.add('on');
-      scene.onload=onSceneReady; scene.src=SCENE_URL; setTimeout(onSceneReady,6000); };
+      scene.onload=onSceneReady; scene.src=freshSceneUrl(); setTimeout(onSceneReady,6000); };
     doorEl.addEventListener('click', openDoor);
 
     // ---------- 抽卡（纯随机头像；小字吐槽随头像走） ----------
