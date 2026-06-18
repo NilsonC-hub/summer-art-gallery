@@ -4376,22 +4376,8 @@
   @keyframes identRing{ 0%{ transform:scale(.4); opacity:0; } 100%{ transform:scale(1); opacity:1; } }
   @keyframes identCore{ 0%{ transform:translate(-50%,-50%) scale(0); } 55%{ transform:translate(-50%,-50%) scale(1.7); box-shadow:0 0 26px rgba(245,210,150,.95);} 100%{ transform:translate(-50%,-50%) scale(1); box-shadow:0 0 13px rgba(245,210,150,.75);} }
   @keyframes enterPulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
-  .mobile-doll-field{ display:none; }
   @media (max-width: 760px), (max-height: 560px), (pointer: coarse){
     html,body{ height:100%; overflow:hidden; }
-    .mobile-doll-field{ position:absolute; inset:0; z-index:0; display:block; opacity:0; pointer-events:none; overflow:hidden;
-      background:radial-gradient(120% 90% at 52% 35%, rgba(123,63,196,.45), rgba(18,10,30,.96) 58%, #08040d 100%);
-      transition:opacity 900ms ease; }
-    .mobile-doll-field.show{ opacity:1; }
-    .mobile-doll-field::before{ content:""; position:absolute; inset:-12%; background:radial-gradient(circle at 50% 38%, rgba(150,80,255,.35), transparent 48%); filter:blur(18px); }
-    .mobile-doll-field img{ position:absolute; width:clamp(112px,38vmin,210px); height:auto; object-fit:contain;
-      filter:drop-shadow(0 20px 34px rgba(0,0,0,.55)); opacity:.94; }
-    .mobile-doll-field img:nth-child(1){ left:-6%; top:9%; transform:rotate(-9deg) scale(1.08); }
-    .mobile-doll-field img:nth-child(2){ right:-4%; top:7%; transform:rotate(7deg) scale(1.04); }
-    .mobile-doll-field img:nth-child(3){ left:35%; top:23%; transform:rotate(2deg) scale(.92); }
-    .mobile-doll-field img:nth-child(4){ left:-10%; bottom:21%; transform:rotate(10deg) scale(.95); }
-    .mobile-doll-field img:nth-child(5){ right:-10%; bottom:18%; transform:rotate(-8deg) scale(.98); }
-    .mobile-doll-field img:nth-child(6){ left:29%; bottom:-5%; transform:rotate(1deg) scale(1.1); }
     .op-screen{ top:50%; width:min(350px,90vw); }
     .card-wrap{ padding:max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
     .card{ width:min(92vw,338px); max-height:calc(100dvh - 28px); padding:clamp(16px,4vw,22px); overflow:visible; }
@@ -4407,13 +4393,6 @@
     [data-bgm]{ right:max(12px, env(safe-area-inset-right)) !important; bottom:max(12px, env(safe-area-inset-bottom)) !important; }
   }
   @media (orientation:landscape) and (max-height:560px){
-    .mobile-doll-field img{ width:clamp(102px,29vmin,160px); }
-    .mobile-doll-field img:nth-child(1){ left:4%; top:-10%; }
-    .mobile-doll-field img:nth-child(2){ right:6%; top:-8%; }
-    .mobile-doll-field img:nth-child(3){ left:44%; top:4%; }
-    .mobile-doll-field img:nth-child(4){ left:11%; bottom:-14%; }
-    .mobile-doll-field img:nth-child(5){ right:12%; bottom:-15%; }
-    .mobile-doll-field img:nth-child(6){ left:46%; bottom:-20%; }
     .op-screen{ top:50%; width:min(340px,44vw); }
     .card-wrap{ place-items:center; padding:10px max(12px, env(safe-area-inset-right)) 10px max(12px, env(safe-area-inset-left)); }
     .card{ width:min(62vw,560px); max-height:calc(100dvh - 20px); display:grid; grid-template-columns:auto minmax(0,1fr); grid-template-areas:"tag tag" "portrait caught" "portrait subname" "portrait actions"; gap:8px 18px; align-items:center; text-align:left; padding:14px 18px; border-radius:22px; }
@@ -4435,14 +4414,6 @@
   <!-- ════════ Phase 1：首页 / 登录（开门→教室→点名→抽卡） ════════ -->
   <div data-opening="" style="position:absolute; inset:0; z-index:100;">
     <iframe data-scene="" title="教室场景" allow="autoplay; fullscreen; xr-spatial-tracking" style="position:absolute; inset:0; width:100%; height:100%; border:0; opacity:0; transition:opacity 2.4s ease;"></iframe>
-    <div data-mobile-dolls="" class="mobile-doll-field" aria-hidden="true">
-      <img src="assets/bundle/a74314de-f754-47aa-8a04-5c2bf0bde3b5.png" alt="">
-      <img src="assets/bundle/28cd8323-0ace-44d0-b96e-7cbcae7cf20c.png" alt="">
-      <img src="assets/bundle/d16821ac-fc74-4926-8555-2316aeee1497.png" alt="">
-      <img src="assets/bundle/8b8546e0-bc6f-49eb-aeab-713c7c0810ca.png" alt="">
-      <img src="assets/bundle/02eae137-4147-4fac-9e25-56bb181a788b.png" alt="">
-      <img src="assets/bundle/a312668b-c762-4e43-b9b0-50a38e773f45.png" alt="">
-    </div>
     <div data-warm="" class="op-warm"></div>
     <div data-catcher="" style="position:absolute; inset:0; pointer-events:none; z-index:2;"></div>
     <div data-dim="" class="op-dim"></div>
@@ -4664,30 +4635,17 @@ class Component extends DCLogic {
       setTimeout(()=>{ chatter.innerHTML=''; screenEl.classList.add('on','flash'); ding();
         setTimeout(()=>screenEl.classList.remove('flash'),520); setTimeout(()=>q('[data-nameinput]').focus(),450); },2600); };
 
-    const mobileDolls=q('[data-mobile-dolls]');
     const isCompactView=()=>window.matchMedia('(max-width: 760px), (max-height: 560px), (pointer: coarse)').matches;
-    let sceneReady=false, mobileScene=false;
+    let sceneReady=false;
     const onSceneReady=()=>{ if(sceneReady) return; sceneReady=true;
-      if(mobileScene){
-        scene.removeAttribute('src');
-        scene.style.display='none';
-        if(mobileDolls) mobileDolls.classList.add('show');
-      }else{
-        scene.classList.add('show'); scene.style.opacity='1';
-      }
+      scene.classList.add('show'); scene.style.opacity='1';
       setTimeout(()=>{ doorEl.classList.add('gone'); },400);
       setTimeout(()=>warm.classList.remove('on'),1200);
       setTimeout(()=>oPad(),2200);
       setTimeout(()=>{ startChatter(); setTimeout(notice,isCompactView()?4300:7000); },isCompactView()?1200:3200); };
     const openDoor=()=>{ if(doorEl.classList.contains('open')) return; ensureAc(); doorSound();
       doorEl.classList.add('open'); warm.classList.add('on');
-      mobileScene=isCompactView();
-      if(mobileScene){
-        if(mobileDolls) mobileDolls.classList.add('show');
-        setTimeout(onSceneReady,900);
-      }else{
-        scene.onload=onSceneReady; scene.src=SCENE_URL; setTimeout(onSceneReady,6000);
-      } };
+      scene.onload=onSceneReady; scene.src=SCENE_URL; setTimeout(onSceneReady,6000); };
     doorEl.addEventListener('click', openDoor);
 
     // ---------- 抽卡（纯随机头像；小字吐槽随头像走） ----------
