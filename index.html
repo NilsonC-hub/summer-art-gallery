@@ -8,6 +8,7 @@
 <meta http-equiv="Expires" content="0">
 <link rel="icon" href="data:,">
 <script src="assets/bundle/d720e783-596a-48f5-bdcf-39baa6692c63.js"></script>
+<script src="assets/gallery-data.js"></script>
 </head>
 <body>
 <x-dc>
@@ -4713,9 +4714,9 @@ class Component extends DCLogic {
     const initHall=()=>{
       if(hallInited) return; hallInited=true;
 
-      // ▼▼▼ 接入点 1 / 图片：把真实图片 URL 填入每幅作品 img 字段（见 QUEUE.push） ▼▼▼
+      // ▼▼▼ 接入点 1 / 图片：把真实图片 URL 填入 ARTWORKS 的 img 字段 ▼▼▼
       const STUDENTS = {
-        blue:{name:PLAYER.name,color:"#5b8fd8",feat:"none",n:4}, green:{name:"苏野",color:"#6cc04a",feat:"none",n:3},
+        blue:{name:PLAYER.name,color:"#5b8fd8",feat:"none",n:1}, green:{name:"苏野",color:"#6cc04a",feat:"none",n:3},
         yellow:{name:"阿黄",color:"#e6b422",feat:"none",n:3}, rednose:{name:"小赤",color:"#e0473f",feat:"nose",n:2}, purple:{name:"阿紫",color:"#9a5cff",feat:"none",n:2}
       };
       const ME='blue', ORDER=['blue','green','yellow','rednose','purple'];
@@ -4723,12 +4724,52 @@ class Component extends DCLogic {
       const MEDIA=["彩铅·淡彩","数位·线稿","水彩","马克笔","铅笔速写","数位上色"];
       const NOTES=["夏天的光被她接住了。","留白比落笔更难，这张做到了。","线很轻，情绪很重。","一片海，半个少年，全是心事。","清晨的安静，画里能听见。","旧的东西，被重新看了一遍。","白衬衫上有风。","远处不远，是想去的地方。","水面在动，心也在动。","课间十分钟，被定格成永远。","雨停了，颜色才刚开始。","看自己，是最难画的。","空教室里，留着所有人的声音。","逆着光，反而看清了。"];
       const PALS=[["#8fb7ff","#3f5b94"],["#ffd2a8","#b5703f"],["#bde6c4","#4f8a64"],["#e7b8e0","#8a5292"],["#b9c0ff","#5158a8"],["#ffd0d0","#a85a5a"],["#a8e0d8","#4f8a82"],["#ffe0a0","#b58a3a"]];
-      const artBg = w => w.img ? `center/cover url(${w.img})`
+      const SAMPLE_ARTWORKS=[
+        {
+          id:"pan-yueting-summer",
+          student:"blue",
+          authorName:"潘悦婷",
+          title:"白衬衫与海风",
+          medium:"Procreate · 数位绘画",
+          year:2026,
+          note:"蓝色的夏天像水面一样发亮，人物停在风里，安静又清透。",
+          img:"assets/bundle/pan-yueting-summer.jpg",
+          imgPosition:"50% 50%",
+          imgFit:"contain",
+          pal:["#b8dcff","#557aa8"],
+          ang:142,
+          sunX:72,
+          mine:true
+        }
+      ];
+      const ARTWORKS=(Array.isArray(window.GALLERY_ARTWORKS)&&window.GALLERY_ARTWORKS.length)?window.GALLERY_ARTWORKS:SAMPLE_ARTWORKS;
+      const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+      const cssUrl=v=>`url('${String(v).replace(/\\/g,'/').replace(/'/g,'%27')}')`;
+      const artBg = w => w.img ? cssUrl(w.img)
         : `radial-gradient(130% 80% at 50% 118%, rgba(0,0,0,.42), transparent 56%), radial-gradient(circle at ${w.sunX}% 26%, rgba(255,255,255,.5), transparent 24%), linear-gradient(${w.ang}deg, ${w.pal[0]}, ${w.pal[1]})`;
-      const QUEUE=[]; let seed=0;
-      ORDER.forEach(k=>{ const s=STUDENTS[k]; for(let i=0;i<s.n;i++){ QUEUE.push({
-        id:`${k}-${i}`,title:TITLES[seed%TITLES.length],medium:MEDIA[seed%MEDIA.length],year:2024+(seed%2),note:NOTES[seed%NOTES.length],
-        pal:PALS[seed%PALS.length],ang:120+(seed*23)%70,sunX:30+(seed*17)%44,img:"",mine:k===ME,author:{key:k,name:s.name,mug:faceHTML(k===ME?{color:PLAYER.faceColor,feat:PLAYER.faceFeat,av:PLAYER.av||AV(k)}:{color:s.color,feat:s.feat,av:AV(k)})} }); seed++; } });
+      const sameName=(a,b)=>String(a||'').trim()&&String(a||'').trim()===String(b||'').trim();
+      const avatarFor=k=>{ const s=STUDENTS[k]||STUDENTS[ME]; return k===ME ? {color:PLAYER.faceColor,feat:PLAYER.faceFeat,av:PLAYER.av||AV(k)} : {color:s.color,feat:s.feat,av:AV(k)}; };
+      const makeWork=(raw,seed)=>{ const k=raw.student||ORDER[seed%ORDER.length], s=STUDENTS[k]||STUDENTS[ME], pal=raw.pal||PALS[seed%PALS.length], authorName=raw.authorName||s.name;
+        return {
+          id:raw.id||`${k}-${seed}`,
+          title:raw.title||TITLES[seed%TITLES.length],
+          medium:raw.medium||MEDIA[seed%MEDIA.length],
+          year:raw.year||2024+(seed%2),
+          note:raw.note||NOTES[seed%NOTES.length],
+          pal,
+          ang:raw.ang??120+(seed*23)%70,
+          sunX:raw.sunX??30+(seed*17)%44,
+          img:raw.img||"",
+          imgPosition:raw.imgPosition||"center",
+          imgFit:raw.imgFit||"cover",
+          mine:raw.mine??sameName(authorName,PLAYER.name),
+          author:{key:k,name:authorName,mug:faceHTML(avatarFor(k))}
+        };
+      };
+      const QUEUE=[]; let seed=0; const USED={};
+      ARTWORKS.forEach(raw=>{ const work=makeWork(raw,seed++); QUEUE.push(work); USED[work.author.key]=(USED[work.author.key]||0)+1; });
+      QUEUE.sort((a,b)=>Number(b.mine)-Number(a.mine));
+      ORDER.forEach(k=>{ const s=STUDENTS[k], remain=Math.max(0,s.n-(USED[k]||0)); for(let i=0;i<remain;i++){ QUEUE.push(makeWork({id:`${k}-${i}`,student:k},seed++)); } });
       const N=QUEUE.length;
       const MINE=QUEUE.filter(w=>w.mine).length;
 
@@ -4771,11 +4812,11 @@ class Component extends DCLogic {
         const bigSpace=hero?(cjk?'.22em':'.05em'):(cjk?'.1em':'.02em');
         const wrap=document.createElement('div');
         wrap.style.cssText='position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;opacity:0;padding:0 8%;';
-        wrap.innerHTML=`${label?`<div style="font-family:${fLabel};font-weight:500;font-size:clamp(9px,1vw,12px);letter-spacing:.52em;text-transform:uppercase;color:rgba(243,234,216,${hero?.72:.46});margin-bottom:${hero?20:12}px;padding-left:.52em;">${label}</div>`:''}
+        wrap.innerHTML=`${label?`<div style="font-family:${fLabel};font-weight:500;font-size:clamp(9px,1vw,12px);letter-spacing:.52em;text-transform:uppercase;color:rgba(243,234,216,${hero?.72:.46});margin-bottom:${hero?20:12}px;padding-left:.52em;">${esc(label)}</div>`:''}
           ${divider?`<div style="margin-bottom:20px;">${rule}</div>`:''}
-          <div style="font-family:${bigFont};font-weight:${hero?600:500};font-size:${bigSize};letter-spacing:${bigSpace};line-height:1.2;color:#f3ead8;text-shadow:0 1px 26px rgba(0,0,0,.6);">${big}</div>
+          <div style="font-family:${bigFont};font-weight:${hero?600:500};font-size:${bigSize};letter-spacing:${bigSpace};line-height:1.2;color:#f3ead8;text-shadow:0 1px 26px rgba(0,0,0,.6);">${esc(big)}</div>
           ${divider?`<div style="margin-top:20px;">${rule}</div>`:''}
-          ${sub?`<div style="margin-top:${hero?18:12}px;font-family:${fLat};font-style:italic;font-size:clamp(13px,1.5vw,19px);letter-spacing:.06em;color:rgba(243,234,216,.5);">${sub}</div>`:''}`;
+          ${sub?`<div style="margin-top:${hero?18:12}px;font-family:${fLat};font-style:italic;font-size:clamp(13px,1.5vw,19px);letter-spacing:.06em;color:rgba(243,234,216,.5);">${esc(sub)}</div>`:''}`;
         stage.appendChild(wrap); return wrap; };
       const beat=(ms=300)=>wait(ms);
       const showLine=(el,hold)=>new Promise(res=>{
@@ -4826,25 +4867,44 @@ class Component extends DCLogic {
       // 正片
       let idx=0, navBusy=false, curStill=null;
       const buildStill=(w,i)=>{ const el=document.createElement('div');
-        el.style.cssText='position:absolute;inset:0;display:flex;align-items:center;gap:clamp(20px,3vw,46px);padding:clamp(22px,3.4vw,46px);opacity:0;';
+        const compact=isCompactView();
+        const frameCss=compact
+          ? 'position:absolute;inset:0;display:flex;flex-direction:column;align-items:stretch;gap:12px;padding:14px;opacity:0;overflow:hidden;'
+          : 'position:absolute;inset:0;display:flex;align-items:center;gap:clamp(20px,3vw,46px);padding:clamp(22px,3.4vw,46px);opacity:0;';
+        const imgWrapCss=compact
+          ? 'flex:0 0 54%;width:100%;border-radius:6px;overflow:hidden;position:relative;cursor:zoom-in;box-shadow:0 22px 46px rgba(0,0,0,.48),inset 0 0 0 1px rgba(255,255,255,.08);'
+          : 'flex:0 0 46%;height:84%;border-radius:6px;overflow:hidden;position:relative;cursor:zoom-in;box-shadow:0 30px 70px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);';
+        const infoCss=compact
+          ? 'flex:1 1 auto;min-width:0;display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;'
+          : 'flex:1 1 auto;min-width:0;';
+        const titleCss=compact
+          ? "margin:0 0 8px;font-family:'Noto Serif SC',serif;font-weight:600;font-size:clamp(22px,7vw,32px);letter-spacing:.04em;line-height:1.18;color:#f7f0e3;"
+          : "margin:0 0 14px;font-family:'Noto Serif SC',serif;font-weight:600;font-size:clamp(26px,3.6vw,46px);letter-spacing:.04em;line-height:1.2;color:#f7f0e3;";
+        const metaCss=compact
+          ? 'display:flex;align-items:center;gap:8px 10px;margin-bottom:10px;flex-wrap:wrap;'
+          : 'display:flex;align-items:center;gap:11px;margin-bottom:18px;';
+        const noteCss=compact
+          ? "margin:0;font-family:'Noto Serif SC',serif;font-weight:300;font-style:italic;font-size:clamp(13px,3.6vw,16px);line-height:1.55;color:rgba(246,239,226,.82);max-width:34ch;"
+          : "margin:0;font-family:'Noto Serif SC',serif;font-weight:300;font-style:italic;font-size:clamp(15px,1.7vw,21px);line-height:1.8;color:rgba(246,239,226,.82);max-width:24ch;";
+        el.style.cssText=frameCss;
         el.innerHTML=`
-          <div data-imgwrap style="flex:0 0 46%;height:84%;border-radius:6px;overflow:hidden;position:relative;cursor:zoom-in;box-shadow:0 30px 70px rgba(0,0,0,.6),inset 0 0 0 1px rgba(255,255,255,.08);">
-            <div data-img style="position:absolute;inset:-5%;background:${artBg(w)};background-size:cover;background-position:center;transform:scale(1.04);transition:transform 9s ease-out;"></div>
+          <div data-imgwrap style="${imgWrapCss}">
+            <div data-img style="position:absolute;inset:-5%;background:${artBg(w)};background-color:rgba(255,255,255,.035);background-size:${w.imgFit||'cover'};background-position:${w.imgPosition||'center'};background-repeat:no-repeat;transform:scale(1.04);transition:transform 9s ease-out;"></div>
             <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.28),transparent 46%);"></div>
             <div style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:rgba(10,7,16,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.82);">⤢ 点击放大</div>
           </div>
-          <div style="flex:1 1 auto;min-width:0;">
-            <div style="font-family:ui-monospace,Consolas,monospace;font-size:clamp(10px,1vw,12px);letter-spacing:.34em;color:rgba(255,236,210,.5);margin-bottom:14px;">NO.${String(i+1).padStart(2,'0')} ／ ${N}</div>
-            <h2 style="margin:0 0 14px;font-family:'Noto Serif SC',serif;font-weight:600;font-size:clamp(26px,3.6vw,46px);letter-spacing:.04em;line-height:1.2;color:#f7f0e3;">${w.title}</h2>
-            <div style="display:flex;align-items:center;gap:11px;margin-bottom:18px;">
+          <div style="${infoCss}">
+            <div style="font-family:ui-monospace,Consolas,monospace;font-size:clamp(9px,1vw,12px);letter-spacing:.28em;color:rgba(255,236,210,.5);margin-bottom:${compact?8:14}px;">NO.${String(i+1).padStart(2,'0')} ／ ${N}</div>
+            <h2 style="${titleCss}">${esc(w.title)}</h2>
+            <div style="${metaCss}">
               <span style="width:32px;height:32px;border-radius:50%;overflow:hidden;display:inline-grid;place-items:center;background:radial-gradient(circle at 50% 40%,#fff,#ccc);box-shadow:0 2px 6px rgba(0,0,0,.3);">${w.author.mug}</span>
-              <span style="font-weight:700;font-size:15px;color:#e9e2f0;">${w.author.name}</span>
-              <span style="font-family:ui-monospace,Consolas,monospace;font-size:12px;color:rgba(233,226,240,.5);">· ${w.medium} · ${w.year}</span>
+              <span style="font-weight:700;font-size:15px;color:#e9e2f0;">${esc(w.author.name)}</span>
+              <span style="font-family:ui-monospace,Consolas,monospace;font-size:12px;color:rgba(233,226,240,.5);">· ${esc(w.medium)} · ${esc(w.year)}</span>
             </div>
-            <p style="margin:0;font-family:'Noto Serif SC',serif;font-weight:300;font-style:italic;font-size:clamp(15px,1.7vw,21px);line-height:1.8;color:rgba(246,239,226,.82);max-width:24ch;">“${w.note}”</p>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:clamp(20px,2.8vw,38px);flex-wrap:wrap;">
+            <p style="${noteCss}">“${esc(w.note)}”</p>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:${compact?12:'clamp(20px,2.8vw,38px)'};flex-wrap:wrap;">
               <button data-prev style="white-space:nowrap;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:#f4eef5;border-radius:10px;padding:11px 18px;cursor:pointer;font:700 13px/1 inherit;${i===0?'opacity:.3;pointer-events:none;':''}">← 上一幅</button>
-              ${(i>=MINE-1 && i<N-1)?`<button data-home style="white-space:nowrap;border:1px solid rgba(255,236,210,.3);background:rgba(255,236,210,.05);color:#f0e6d4;border-radius:10px;padding:11px 18px;cursor:pointer;font:700 13px/1 inherit;">谢幕 · 回首页</button>`:''}
+              ${(MINE>0 && i>=MINE-1 && i<N-1)?`<button data-home style="white-space:nowrap;border:1px solid rgba(255,236,210,.3);background:rgba(255,236,210,.05);color:#f0e6d4;border-radius:10px;padding:11px 18px;cursor:pointer;font:700 13px/1 inherit;">谢幕 · 回首页</button>`:''}
               <button data-next style="white-space:nowrap;border:0;border-radius:10px;padding:11px 20px;cursor:pointer;font:800 13px/1 inherit;color:#1a1228;background:linear-gradient(180deg,#ffe8c2,#f5cf92);box-shadow:0 10px 22px rgba(245,207,146,.28);">${i===N-1?'谢幕 · 回首页 ✦':'下一幅 →'}</button>
             </div>
             ${i===MINE-1?`<div style="margin-top:14px;font-family:ui-monospace,Consolas,monospace;font-size:11px;letter-spacing:.08em;color:rgba(255,236,210,.45);">— 你的作品到此为止，可以谢幕，或继续看同学们的 —</div>`:''}
@@ -4864,9 +4924,9 @@ class Component extends DCLogic {
 
       const zoomImage=(w)=>{ const ov=document.createElement('div');
         ov.style.cssText='position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:4vmin;cursor:zoom-out;background:rgba(4,3,8,0);';
-        ov.innerHTML=`<div data-zi style="position:relative;height:92%;max-width:92%;aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:0 50px 120px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.1);transform:scale(.92);opacity:0;background:${artBg(w)};background-size:cover;background-position:center;">
+        ov.innerHTML=`<div data-zi style="position:relative;height:92%;max-width:92%;aspect-ratio:3/4;border-radius:8px;overflow:hidden;box-shadow:0 50px 120px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.1);transform:scale(.92);opacity:0;background:${artBg(w)};background-color:rgba(255,255,255,.035);background-size:${w.imgFit||'cover'};background-position:${w.imgPosition||'center'};background-repeat:no-repeat;">
           <div style="position:absolute;left:0;right:0;bottom:0;padding:18px 22px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;background:linear-gradient(to top,rgba(0,0,0,.62),transparent);">
-            <div><div style="font-family:'Noto Serif SC',serif;font-weight:600;font-size:clamp(18px,2.4vw,28px);color:#fff;">${w.title}</div><div style="font-family:${mono};font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.72);margin-top:5px;">${w.author.name} · ${w.medium} · ${w.year}</div></div>
+            <div><div style="font-family:'Noto Serif SC',serif;font-weight:600;font-size:clamp(18px,2.4vw,28px);color:#fff;">${esc(w.title)}</div><div style="font-family:${mono};font-size:12px;letter-spacing:.1em;color:rgba(255,255,255,.72);margin-top:5px;">${esc(w.author.name)} · ${esc(w.medium)} · ${esc(w.year)}</div></div>
             <div style="font-family:${mono};font-size:11px;letter-spacing:.12em;color:rgba(255,255,255,.6);white-space:nowrap;">点击任意处收起 ✕</div>
           </div></div>`;
         hallLayer.appendChild(ov); const zi=ov.querySelector('[data-zi]');

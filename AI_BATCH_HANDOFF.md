@@ -1,0 +1,125 @@
+# AI Batch Handoff: Summer Art Gallery
+
+You are helping batch-process artwork images for the static GitHub Pages site at:
+
+`E:\Claude Code\procreate web\_github_pages_summer_art_gallery`
+
+## Goal
+
+Turn the real artwork source folder into deployable gallery data.
+
+Source folder:
+
+`E:\Claude Code\procreate web\assets\gallery`
+
+Current source naming rule:
+
+```text
+assets/gallery/作者名/作品名.jpg
+assets/gallery/分类名/作者名/作品名.jpg
+```
+
+Examples:
+
+```text
+assets/gallery/潘玥婷/暑假.JPG
+assets/gallery/人物练习/潘玥婷/暑假.JPG
+```
+
+## Important Name Matching
+
+The site asks the visitor to enter a name during 点名. Artwork is treated as "mine" when `authorName` exactly matches that entered name.
+
+So preserve the exact author folder name. For example:
+
+```text
+潘玥婷
+```
+
+is different from:
+
+```text
+潘悦婷
+```
+
+Do not normalize or "correct" Chinese names unless the user explicitly asks.
+
+## What To Do
+
+1. Put processed images into `E:\Claude Code\procreate web\assets\gallery`.
+2. Use the folder name as the author and the file name without extension as the artwork title.
+3. Keep image file names readable. Chinese names are allowed.
+4. Prefer `.jpg`, `.jpeg`, `.png`, or `.webp`.
+5. After adding or changing files, run from the workspace root:
+
+```powershell
+.\_github_pages_summer_art_gallery\scripts\sync-gallery.ps1
+```
+
+This copies source images into:
+
+```text
+_github_pages_summer_art_gallery/assets/bundle/gallery/
+```
+
+and regenerates:
+
+```text
+_github_pages_summer_art_gallery/assets/gallery-data.js
+```
+
+## Generated Data Schema
+
+`assets/gallery-data.js` defines:
+
+```js
+window.GALLERY_ARTWORKS = [
+  {
+    id: "gallery/作者名/作品名",
+    category: "",
+    authorName: "作者名",
+    title: "作品名",
+    medium: "Procreate",
+    year: 2026,
+    note: "",
+    img: "assets/bundle/gallery/作者名/作品名.jpg",
+    imgPosition: "50% 50%",
+    imgFit: "contain"
+  }
+];
+```
+
+Leave `imgFit: "contain"` for portrait or mixed-ratio student artwork so the full image is visible in the projector screen.
+
+Use `imgFit: "cover"` only when the user wants a cinematic crop.
+
+## Verification
+
+After syncing, run a local server from the deploy folder:
+
+```powershell
+cd "E:\Claude Code\procreate web\_github_pages_summer_art_gallery"
+python -m http.server 4177 --bind 127.0.0.1
+```
+
+Open:
+
+```text
+http://127.0.0.1:4177/
+```
+
+Test flow:
+
+1. Click the classroom door.
+2. Enter an author name exactly, such as `潘玥婷`.
+3. Continue to the projector.
+4. Start the film.
+5. Click `进入正片`.
+6. Confirm the matching author's artwork appears first.
+
+## Do Not
+
+- Do not manually edit the large inline HTML unless changing the site runtime.
+- Do not delete existing generated bundle assets unless replacing them intentionally.
+- Do not rename author folders without user confirmation.
+- Do not convert all images to one fixed crop; preserve the full artwork unless told otherwise.
