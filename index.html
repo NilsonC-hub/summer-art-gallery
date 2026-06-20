@@ -4886,10 +4886,15 @@ class Component extends DCLogic {
         const noteCss=compact
           ? "margin:0;font-family:'Noto Serif SC',serif;font-weight:300;font-style:italic;font-size:clamp(13px,3.6vw,16px);line-height:1.55;color:rgba(246,239,226,.82);max-width:34ch;"
           : "margin:0;font-family:'Noto Serif SC',serif;font-weight:300;font-style:italic;font-size:clamp(15px,1.7vw,21px);line-height:1.8;color:rgba(246,239,226,.82);max-width:24ch;";
+        const fit=w.imgFit||'cover';
+        const keepFullImage=fit==='contain';
+        const imgLayerCss=keepFullImage
+          ? `position:absolute;inset:0;background:${artBg(w)};background-color:rgba(255,255,255,.035);background-size:${fit};background-position:${w.imgPosition||'center'};background-repeat:no-repeat;transform:none;transition:none;`
+          : `position:absolute;inset:-5%;background:${artBg(w)};background-color:rgba(255,255,255,.035);background-size:${fit};background-position:${w.imgPosition||'center'};background-repeat:no-repeat;transform:scale(1.04);transition:transform 9s ease-out;`;
         el.style.cssText=frameCss;
         el.innerHTML=`
           <div data-imgwrap style="${imgWrapCss}">
-            <div data-img style="position:absolute;inset:-5%;background:${artBg(w)};background-color:rgba(255,255,255,.035);background-size:${w.imgFit||'cover'};background-position:${w.imgPosition||'center'};background-repeat:no-repeat;transform:scale(1.04);transition:transform 9s ease-out;"></div>
+            <div data-img data-fit="${fit}" style="${imgLayerCss}"></div>
             <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.28),transparent 46%);"></div>
             <div style="position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;background:rgba(10,7,16,.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font-family:ui-monospace,Consolas,monospace;font-size:10px;letter-spacing:.12em;color:rgba(255,255,255,.82);">⤢ 点击放大</div>
           </div>
@@ -4916,7 +4921,7 @@ class Component extends DCLogic {
         return el; };
       const showStill=(i,first)=>{ if(first&&scrglow) scrglow.style.background='radial-gradient(70% 80% at 50% 46%, rgba(180,160,230,.14), transparent 64%)';
         idx=i; const el=buildStill(QUEUE[i],i); stage.appendChild(el);
-        requestAnimationFrame(()=>{ const im=el.querySelector('[data-img]'); if(im) im.style.transform='scale(1.12) translate(-2%,-1.5%)'; });
+        requestAnimationFrame(()=>{ const im=el.querySelector('[data-img]'); if(im&&im.dataset.fit!=='contain') im.style.transform='scale(1.12) translate(-2%,-1.5%)'; });
         const old=curStill; curStill=el;
         tween(first?900:620, t=>{ el.style.opacity=String(t.toFixed(3)); }, eo);
         if(old){ tween(420, t=>{ old.style.opacity=String((1-t).toFixed(3)); }, eo, ()=>old.remove()); } };

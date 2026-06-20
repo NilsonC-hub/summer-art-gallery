@@ -71,6 +71,15 @@ $sourcePath = Resolve-Path $Source
 $deployPath = Resolve-Path $DeployRoot
 $bundleGallery = Join-Path $deployPath "assets/bundle/gallery"
 $dataPath = Join-Path $deployPath "assets/gallery-data.js"
+$notesPath = Join-Path $deployPath "assets/gallery-notes.json"
+
+$notes = @{}
+if (Test-Path $notesPath) {
+  $notesObject = Get-Content -LiteralPath $notesPath -Raw -Encoding UTF8 | ConvertFrom-Json
+  foreach ($prop in $notesObject.PSObject.Properties) {
+    $notes[$prop.Name] = [string]$prop.Value
+  }
+}
 
 New-Item -ItemType Directory -Path $bundleGallery -Force | Out-Null
 
@@ -91,6 +100,10 @@ foreach ($file in $files) {
 
   $webRelative = To-RelativeWebPath $relative
   $id = "gallery/" + ([System.IO.Path]::ChangeExtension($webRelative, $null).TrimEnd("."))
+  $note = ""
+  if ($notes.ContainsKey($id)) {
+    $note = $notes[$id]
+  }
 
   $items.Add([ordered]@{
     id = $id
@@ -99,7 +112,7 @@ foreach ($file in $files) {
     title = $meta.Title
     medium = $DefaultMedium
     year = $DefaultYear
-    note = ""
+    note = $note
     img = "assets/bundle/gallery/$webRelative"
     imgPosition = "50% 50%"
     imgFit = "contain"
