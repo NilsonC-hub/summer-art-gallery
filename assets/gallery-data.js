@@ -312,6 +312,18 @@
         "imgFit":  "contain"
     },
     {
+        "id":  "gallery/严珮钧/水果游乐场",
+        "category":  "",
+        "authorName":  "严珮钧",
+        "title":  "水果游乐场",
+        "medium":  "Procreate",
+        "year":  2026,
+        "note":  "如果世界上有硕大无比的草莓，我该用消防栓来冲洗它吗？",
+        "img":  "assets/bundle/gallery/严珮钧/水果游乐场.jpg",
+        "imgPosition":  "50% 50%",
+        "imgFit":  "contain"
+    },
+    {
         "id":  "gallery/叶源源/黄金时代",
         "category":  "",
         "authorName":  "叶源源",
