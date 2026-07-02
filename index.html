@@ -4750,6 +4750,7 @@ class Component extends DCLogic {
       const sameName=(a,b)=>String(a||'').trim()&&String(a||'').trim()===String(b||'').trim();
       const avatarFor=k=>{ const s=STUDENTS[k]||STUDENTS[ME]; return k===ME ? {color:PLAYER.faceColor,feat:PLAYER.faceFeat,av:PLAYER.av||AV(k)} : {color:s.color,feat:s.feat,av:AV(k)}; };
       const makeWork=(raw,seed)=>{ const k=raw.student||ORDER[seed%ORDER.length], s=STUDENTS[k]||STUDENTS[ME], pal=raw.pal||PALS[seed%PALS.length], authorName=raw.authorName||s.name;
+        const isMine=raw.mine??sameName(authorName,PLAYER.name);
         return {
           id:raw.id||`${k}-${seed}`,
           title:raw.title||TITLES[seed%TITLES.length],
@@ -4762,8 +4763,8 @@ class Component extends DCLogic {
           img:raw.img||"",
           imgPosition:raw.imgPosition||"center",
           imgFit:raw.imgFit||"cover",
-          mine:raw.mine??sameName(authorName,PLAYER.name),
-          author:{key:k,name:authorName,mug:faceHTML(avatarFor(k))}
+          mine:isMine,
+          author:{key:k,name:authorName,mug:faceHTML(isMine?{color:PLAYER.faceColor,feat:PLAYER.faceFeat,av:PLAYER.av||AV(ME)}:avatarFor(k))}
         };
       };
       const QUEUE=[]; let seed=0; const USED={};
